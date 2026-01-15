@@ -1,0 +1,29 @@
+schema_version = "1.0.0"
+id = "arborist"
+version = "0.1.0"
+name = "Arborist"
+tagline = "Carfully crafted node tree generation with code"
+maintainer = "Brady Johnston<brady.johnston@me.com>"
+type = "add-on"
+website = "https://bradyajohnston.github.io/arborist/"
+blender_version_min = "5.0.0"
+platforms = [
+	"macos-arm64",
+]
+tags = [
+	"Geometry Nodes",
+]
+license = [
+	"SPDX:GPL-3.0-or-later",
+]
+copyright = [
+	"2026 Brady Johnston",
+]
+
+# wheels = [
+
+# ]
+
+[permissions]
+files = "Reading updating script files"
+
