@@ -1,0 +1,3 @@
+  {
+    blender.addonFolders: [./src/addon1, ./src/addon2]
+  }

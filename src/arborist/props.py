@@ -1,5 +1,5 @@
 from bpy.props import StringProperty, IntProperty, BoolProperty, PointerProperty, EnumProperty
-from bpy.types import PropertyGroup, Text
+from bpy.types import PropertyGroup, Text, GeometryNodeTree
 import bpy
 
 
@@ -30,6 +30,10 @@ class ArboristProperties(PropertyGroup):
             ("text", "Text", "Use a text block from within Blender"),
             ("file", "File", "Look at a file on disk")
         )
+    )
+    node_group: PointerProperty( # type: ignore
+        name="Node Group",
+        type=bpy.types.GeometryNodeTree
     )
 
 

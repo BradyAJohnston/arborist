@@ -7,30 +7,11 @@ authors = [
     { name = "Brady Johnston", email = "brady.johnston@me.com" }
 ]
 requires-python = ">=3.11"
-dependencies = [
-    "fake-bpy-module>=20260419",
-    "nodebpy>=0.10",
-]
+dependencies = []
 
 [project.scripts]
 arborist = "arborist:main"
 
-[project.optional-dependencies]
-dev = [
-    "extbpy>=0.1.0",
-    "pytest>=9.0.2",
-    "quarto-cli>=1.8.26",
-    "quartodoc>=0.11.1",
-]
-
 [build-system]
 requires = ["uv_build>=0.8.15,<0.9.0"]
 build-backend = "uv_build"
-
-[tool.uv.workspace]
-members = [
-    "arborist",
-]
-
-[tool.uv.sources]
-extbpy = { path = "../extbpy" }

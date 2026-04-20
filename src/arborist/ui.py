@@ -20,8 +20,9 @@ class AR_PT_DefaultPanel(Panel):
         p = props.props(context)
         layout.label(text="Arborist Add-on Panel")
         # row = layout.row(align=True)
-        layout.props_enum(p, "import_type")
+        layout.template_ID(p, "node_group", new="object.geometry_node_tree_copy_assign")
         layout.prop(p, "is_updating")
+        layout.props_enum(p, "import_type")
         match p.import_type:
             case "file":
                 layout.prop(p, "file_path")

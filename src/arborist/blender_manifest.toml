@@ -20,10 +20,5 @@ copyright = [
 	"2026 Brady Johnston",
 ]
 
-# wheels = [
-
-# ]
-
 [permissions]
 files = "Reading updating script files"
-
