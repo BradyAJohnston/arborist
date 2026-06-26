@@ -6,7 +6,7 @@ tagline = "Carfully crafted node tree generation with code"
 maintainer = "Brady Johnston<brady.johnston@me.com>"
 type = "add-on"
 website = "https://bradyajohnston.github.io/arborist/"
-blender_version_min = "5.0.0"
+blender_version_min = "5.2.0"
 platforms = [
 	"macos-arm64",
 ]
@@ -18,6 +18,9 @@ license = [
 ]
 copyright = [
 	"2026 Brady Johnston",
+]
+wheels = [
+	"./wheels/nodebpy-520.5.0-py3-none-any.whl",
 ]
 
 [permissions]

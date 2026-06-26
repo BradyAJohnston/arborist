@@ -1,18 +1,26 @@
 import bpy
 from bpy.types import Operator
+from . import timer
 
 
-class ARBORIST_OT_dummy_operator(Operator):
-    bl_idname = "arborist.dummy_operator"
-    bl_label = "Dummy Operator"
-    bl_description = "A placeholder operator for Arborist"
+class ARBORIST_OT_run_script(Operator):
+    bl_idname = "arborist.run_script"
+    bl_label = "Run Script"
+    bl_description = "Manually execute the arborist script now"
 
     def execute(self, context):
-        self.report({"INFO"}, "Dummy operator executed")
+        timer.execute_script()
+        from .props import props
+
+        p = props(context)
+        if p.last_status == "error":
+            self.report({"ERROR"}, p.last_error)
+        else:
+            self.report({"INFO"}, "Script executed successfully")
         return {"FINISHED"}
 
 
-CLASSES = (ARBORIST_OT_dummy_operator,)
+CLASSES = (ARBORIST_OT_run_script,)
 
 
 def register():

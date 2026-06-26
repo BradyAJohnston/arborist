@@ -6,10 +6,9 @@ readme = "README.md"
 authors = [
     { name = "Brady Johnston", email = "brady.johnston@me.com" }
 ]
-requires-python = ">=3.11"
+requires-python = ">=3.13"
 dependencies = [
-    "fake-bpy-module>=20260419",
-    "nodebpy>=0.10",
+    "nodebpy==520.5.*",
 ]
 
 [project.scripts]
@@ -17,10 +16,12 @@ arborist = "arborist:main"
 
 [project.optional-dependencies]
 dev = [
+    # "bpy>=5.2.*",
+    "fake-bpy-module>=20260419",
     "extbpy>=0.1.0",
     "pytest>=9.0.2",
-    "quarto-cli>=1.8.26",
-    "quartodoc>=0.11.1",
+    "quarto-cli>=1.9",
+    "quartodoc>=0.11",
 ]
 
 [build-system]

@@ -1,5 +1,11 @@
-from bpy.props import StringProperty, IntProperty, BoolProperty, PointerProperty, EnumProperty
-from bpy.types import PropertyGroup, Text, GeometryNodeTree
+from bpy.props import (
+    StringProperty,
+    IntProperty,
+    BoolProperty,
+    PointerProperty,
+    EnumProperty,
+)
+from bpy.types import PropertyGroup, Text
 import bpy
 
 
@@ -20,20 +26,47 @@ class ArboristProperties(PropertyGroup):
         description="Indicates if an update is in progress",
         default=False,
     )
-    text_block: PointerProperty( # type: ignore
-        name="Text",
-        type=Text
+    text_block: PointerProperty(  # type: ignore
+        name="Text", type=Text
     )
-    import_type: EnumProperty( # type: ignore
+    import_type: EnumProperty(  # type: ignore
         name="Method",
         items=(
             ("text", "Text", "Use a text block from within Blender"),
-            ("file", "File", "Look at a file on disk")
-        )
+            ("file", "File", "Look at a file on disk"),
+        ),
     )
-    node_group: PointerProperty( # type: ignore
-        name="Node Group",
-        type=bpy.types.GeometryNodeTree
+    node_group: PointerProperty(  # type: ignore
+        name="Node Group", type=bpy.types.GeometryNodeTree
+    )
+    last_executed_time: IntProperty(  # type: ignore
+        name="Last Executed Time",
+        description="Unix timestamp of the last script execution",
+        default=0,
+    )
+    last_status: EnumProperty(  # type: ignore
+        name="Last Status",
+        items=(
+            ("none", "Never Run", "Script has never been executed"),
+            ("success", "Success", "Last execution succeeded"),
+            ("error", "Error", "Last execution failed with an error"),
+        ),
+        default="none",
+    )
+    last_error: StringProperty(  # type: ignore
+        name="Last Error",
+        description="Error message from the last failed execution",
+        default="",
+    )
+    last_output: StringProperty(  # type: ignore
+        name="Last Output",
+        description="Captured stdout from the last execution",
+        default="",
+    )
+    run_count: IntProperty(  # type: ignore
+        name="Run Count",
+        description="Number of times the script has been executed",
+        default=0,
     )
 
 
@@ -42,7 +75,9 @@ def props(context: bpy.types.Context | None = None) -> ArboristProperties:
         context = bpy.context
     return context.scene.ar  # type: ignore
 
+
 CLASSES = (ArboristProperties,)
+
 
 def register():
     for cls in CLASSES:
