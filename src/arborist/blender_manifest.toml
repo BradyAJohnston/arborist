@@ -2,26 +2,35 @@ schema_version = "1.0.0"
 id = "arborist"
 version = "0.1.0"
 name = "Arborist"
-tagline = "Carfully crafted node tree generation with code"
-maintainer = "Brady Johnston<brady.johnston@me.com>"
+tagline = "Build and edit node trees live with nodebpy code"
+maintainer = "Brady Johnston <brady.johnston@me.com>"
 type = "add-on"
 website = "https://bradyajohnston.github.io/arborist/"
-blender_version_min = "5.2.0"
-platforms = [
-	"macos-arm64",
-]
 tags = [
-	"Geometry Nodes",
+    "Geometry Nodes",
+    "Import-Export",
 ]
+blender_version_min = "5.2.0"
 license = [
-	"SPDX:GPL-3.0-or-later",
+    "SPDX:GPL-3.0-or-later",
 ]
 copyright = [
-	"2026 Brady Johnston",
+    "2026 Brady Johnston",
+]
+platforms = [
+    "macos-arm64",
 ]
 wheels = [
-	"./wheels/nodebpy-520.5.0-py3-none-any.whl",
+    "./wheels/click-8.5.0-py3-none-any.whl",
+    "./wheels/extbpy-0.2.0-py3-none-any.whl",
+    "./wheels/markdown_it_py-4.2.0-py3-none-any.whl",
+    "./wheels/mdurl-0.1.2-py3-none-any.whl",
+    "./wheels/nodebpy-520.29.0-py3-none-any.whl",
+    "./wheels/packaging-26.3-py3-none-any.whl",
+    "./wheels/pygments-2.21.0-py3-none-any.whl",
+    "./wheels/rich-15.0.0-py3-none-any.whl",
+    "./wheels/tomlkit-0.15.1-py3-none-any.whl",
 ]
 
 [permissions]
-files = "Reading updating script files"
+files = "Read and write the script file being watched"

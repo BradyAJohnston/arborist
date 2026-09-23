@@ -1,18 +1,16 @@
 [project]
 name = "arborist"
 version = "0.1.0"
-description = "Add your description here"
+description = "Blender extension for building and editing node trees live with nodebpy code"
 readme = "README.md"
 authors = [
     { name = "Brady Johnston", email = "brady.johnston@me.com" }
 ]
 requires-python = ">=3.13"
 dependencies = [
-    "nodebpy>=520.26.0",
+    "extbpy>=0.2.0",
+    "nodebpy>=520.28.0",
 ]
-
-[project.scripts]
-arborist = "arborist:main"
 
 [project.optional-dependencies]
 dev = [
@@ -33,5 +31,27 @@ members = [
     "arborist",
 ]
 
-[tool.uv.sources]
-extbpy = { path = "../extbpy" }
+[tool.ruff.lint.per-file-ignores]
+"src/arborist/ops.py" = ["RUF012", "BLE001"]
+"src/arborist/live.py" = ["BLE001"]
+
+[tool.extbpy]
+# Blender-specific metadata. `extbpy build` merges this with [project] to
+# generate blender_manifest.toml and the per-platform extension zips.
+pretty_name = "Arborist"
+tagline = "Build and edit node trees live with nodebpy code"
+blender_version_min = "5.2.0"
+platforms = ["windows-x64", "linux-x64", "macos-arm64"]
+tags = ["Geometry Nodes", "Import-Export"]
+type = "add-on"
+maintainer = "Brady Johnston <brady.johnston@me.com>"
+website = "https://bradyajohnston.github.io/arborist/"
+copyright = ["2026 Brady Johnston"]
+license = ["SPDX:GPL-3.0-or-later"]
+# Not bundled on top of what Blender already vendors (numpy, requests, ...).
+exclude_packages = ["pyarrow"]
+# Added to the default excludes (__pycache__/, .*, /*.zip).
+paths_exclude_pattern = ["*.blend[1-9]"]
+[tool.extbpy.permissions]
+files = "Read and write the script file being watched"
+

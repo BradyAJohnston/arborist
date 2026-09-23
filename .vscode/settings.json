@@ -1,3 +1,7 @@
-  {
-    blender.addonFolders: [./src/addon1, ./src/addon2]
+{
+  "blender.addonFolders": ["./src/arborist"],
+  "[python]": {
+    "editor.defaultFormatter": "charliermarsh.ruff",
+    "editor.formatOnSave": true
   }
+}

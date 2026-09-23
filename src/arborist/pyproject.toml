@@ -1,16 +1,13 @@
 [project]
 name = "arborist"
 version = "0.1.0"
-description = "Add your description here"
+description = "Blender extension for building and editing node trees live with nodebpy code"
 readme = "README.md"
 authors = [
     { name = "Brady Johnston", email = "brady.johnston@me.com" }
 ]
 requires-python = ">=3.11"
 dependencies = []
-
-[project.scripts]
-arborist = "arborist:main"
 
 [build-system]
 requires = ["uv_build>=0.8.15,<0.9.0"]

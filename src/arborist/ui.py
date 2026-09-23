@@ -1,103 +1,82 @@
 import time
-from bpy.types import Panel, Context, UILayout
+
+from bpy.types import Context, Panel, UILayout
 from bpy.utils import register_class, unregister_class
-from . import props
+
+from .props import props
+
+ERROR_LINES = 8
 
 
-class AR_PT_DefaultPanel(Panel):
-    bl_idname = "ARBORIST_PT_main_panel"
+class ARBORIST_PT_main(Panel):
+    bl_idname = "ARBORIST_PT_main"
     bl_label = "Arborist"
     bl_space_type = "NODE_EDITOR"
     bl_region_type = "UI"
     bl_category = "Arborist"
 
-    @classmethod
-    def poll(cls, context: Context) -> bool:
-        return True
-
     def draw(self, context: Context):
         layout: UILayout = self.layout  # type: ignore
-        p = props.props(context)
+        p = props(context)
 
-        layout.template_ID(p, "node_group", new="object.geometry_node_tree_copy_assign")
-
-        layout.separator()
-
-        # Source selection
-        layout.label(text="Script Source")
-        layout.props_enum(p, "import_type")
-        match p.import_type:
-            case "file":
-                layout.prop(p, "file_path")
-            case "text":
-                layout.prop(p, "text_block")
-
-        layout.separator()
-
-        # Auto-reload toggle (only meaningful for file mode)
-        row = layout.row()
-        row.prop(p, "is_updating", text="Auto Reload")
-        if p.import_type == "text":
-            row.enabled = False
-
-        layout.separator()
-
-        # Manual run button
-        run_row = layout.row()
-        run_row.scale_y = 1.4
-        run_row.operator("arborist.run_script", text="Run Script", icon="PLAY")
-
-        layout.separator()
-
-        # Execution status box
-        box = layout.box()
-        box.label(text="Last Execution", icon="INFO")
-
-        if p.last_executed_time == 0:
-            box.label(text="Never executed", icon="RADIOBUT_OFF")
+        # Source ---------------------------------------------------------
+        col = layout.column(align=True)
+        col.row(align=True).prop(p, "source", expand=True)
+        if p.source == "FILE":
+            col.prop(p, "file_path", text="")
         else:
-            # Format timestamp relative to now
-            elapsed = int(time.time()) - p.last_executed_time
-            if elapsed < 60:
-                time_str = f"{elapsed}s ago"
-            elif elapsed < 3600:
-                time_str = f"{elapsed // 60}m {elapsed % 60}s ago"
-            else:
-                time_str = time.strftime(
-                    "%H:%M:%S", time.localtime(p.last_executed_time)
-                )
+            col.template_ID(p, "text_block", new="arborist.new_text")
+        layout.prop(p, "auto_reload", icon="FILE_REFRESH")
 
-            status_icon = "CHECKMARK" if p.last_status == "success" else "ERROR"
-            status_text = "Success" if p.last_status == "success" else "Error"
-            box.label(text=f"{status_text}  —  {time_str}", icon=status_icon)
-            box.label(text=f"Run count: {p.run_count}")
+        # Export ---------------------------------------------------------
+        box = layout.box()
+        box.operator("arborist.export_to_code", icon="EXPORT")
+        col = box.column(align=True)
+        col.prop(p, "selected_tree_only")
+        col.prop(p, "min_chain_length")
+        col.prop(p, "snapshot_positions")
+        col.prop(p, "keep_reroutes")
+        col.prop(p, "strict")
 
-            if p.last_status == "error" and p.last_error:
-                err_box = box.box()
-                err_box.alert = True
-                # Word-wrap long error messages across multiple label rows
-                for line in _wrap_text(p.last_error, 40):
-                    err_box.label(text=line)
+        # Run ------------------------------------------------------------
+        box = layout.box()
+        row = box.row(align=True)
+        row.scale_y = 1.4
+        row.operator("arborist.run_script", text="Run", icon="PLAY").mode = "TREE"
+        row.operator(
+            "arborist.run_script", text="Run as Group", icon="NODETREE"
+        ).mode = "GROUP"
+        if context.active_object is not None:
+            box.prop(p, "apply_to_object")
 
-            if p.last_status == "success" and p.last_output:
-                out_box = box.box()
-                out_box.label(text="Output:", icon="OUTPUT")
-                for line in p.last_output.splitlines()[:6]:
-                    out_box.label(text=line)
+        # Status ---------------------------------------------------------
+        box = layout.box()
+        if p.last_status == "NONE":
+            box.label(text="Never run", icon="RADIOBUT_OFF")
+            return
+
+        elapsed = int(time.time()) - p.last_executed_time
+        if elapsed < 60:
+            when = f"{elapsed}s ago"
+        elif elapsed < 3600:
+            when = f"{elapsed // 60}m ago"
+        else:
+            when = time.strftime("%H:%M:%S", time.localtime(p.last_executed_time))
+        if p.last_status == "SUCCESS":
+            box.label(text=f"Success, {when} (run {p.run_count})", icon="CHECKMARK")
+        else:
+            box.alert = True
+            box.label(text=f"Error, {when}", icon="ERROR")
+            for line in p.last_error.strip().splitlines()[-ERROR_LINES:]:
+                box.label(text=line.strip())
+        if p.last_output:
+            out = box.box()
+            out.label(text="Output", icon="CONSOLE")
+            for line in p.last_output.splitlines()[:ERROR_LINES]:
+                out.label(text=line)
 
 
-def _wrap_text(text: str, width: int) -> list[str]:
-    """Split text into lines no longer than width characters."""
-    lines = []
-    for paragraph in text.splitlines():
-        while len(paragraph) > width:
-            lines.append(paragraph[:width])
-            paragraph = paragraph[width:]
-        lines.append(paragraph)
-    return lines or [""]
-
-
-CLASSES = (AR_PT_DefaultPanel,)
+CLASSES = (ARBORIST_PT_main,)
 
 
 def register():

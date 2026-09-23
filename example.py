@@ -1,13 +1,11 @@
 from math import tau
 
 import bpy
-from nodebpy.builder import TreeBuilder, CustomCompositorGroup
 from nodebpy import compositor as c
 from nodebpy import geometry as g
 from nodebpy import shader as s
+from nodebpy.builder import CustomCompositorGroup, TreeBuilder
 from nodebpy.types import InputColor, InputFloat, InputInteger, InputVector
-
-existing_tree = bpy.data.node_groups["Geometry Nodes"]
 
 
 class Outline(CustomCompositorGroup):
@@ -24,7 +22,6 @@ class Outline(CustomCompositorGroup):
         outline_color: InputColor = None,
         outline_size: InputInteger = 1,
     ):
-        bpy.data.node_groups.remove(bpy.data.node_groups["Outline"])
         super().__init__()
         kwargs = {
             "Image": image,
@@ -47,27 +44,27 @@ class Outline(CustomCompositorGroup):
         outline_color = tree.inputs.color("Outline Color")
         outline_size = tree.inputs.integer("Outline Size")
 
-        diff = c.AntiAliasing(
-            (c.Filter.sobel(depth) > depth_threshold)
-            - (c.Filter.sobel(normal) < normal_threshold)
-        ) >> c.Dilateerode.distance(size=outline_size)
-        c.AlphaOver(image, outline_color, diff) >> tree.outputs.color("Image")
+        (
+            c.AntiAliasing(
+                (c.Filter.sobel(depth) > depth_threshold)
+                - (c.Filter.sobel(normal) < normal_threshold)
+            )
+            >> c.DilateErode.distance(size=outline_size)
+            >> c.AlphaOver(image, outline_color, ...)
+            >> tree.outputs.color("Image")
+        )
 
 
 def compositing_tree() -> bpy.types.CompositorNodeTree:
-    with c.tree(bpy.data.node_groups.get("Compositor Nodes", "Compositor")) as tree:
-        tree.nodes.clear()
-        tree.tree.interface.clear()
-
+    with c.tree("Compositor Nodes", clear=True) as tree:
         layers = c.RenderLayers()
         depth = c.SetAlpha(layers.o.depth, alpha=layers.o.alpha)
         normal = layers.o.normal
 
-        (
-            c.Glare.bloom(layers, size=0.1)
+        over = (
+            c.Glare.bloom(layers, size=0.5)
             >> Outline(
-                ...,
-                depth,
+                depth=depth,
                 depth_treshold=0.000001,
                 normal=normal,
                 outline_color=(0.0, 0.0, 0.0, 1.0),
@@ -75,8 +72,8 @@ def compositing_tree() -> bpy.types.CompositorNodeTree:
                 outline_size=0,
             )
             >> c.AlphaOver((0.0, 0.0, 0.0, 1.0), ...)
-            >> tree.outputs.color("Image")
         )
+        over >> tree.outputs.color("Image")
     return tree.tree
 
 
@@ -87,30 +84,26 @@ scene.compositing_node_group = compositing_tree()
 
 def material() -> bpy.types.Material:
     mat = bpy.data.materials["Material"]
-    with s.tree(mat.node_tree) as tree:
-        tree.nodes.clear()
+    with s.tree(mat.node_tree, clear=True):
         pos = s.Attribute.geometry("position")
 
-        _ = pos >> s.Emission(..., (pos.o.vector.z + 2) * 1) >> s.MaterialOutput()
+        (pos >> s.Emission(strength=(pos.o.vector.z + 2) * 1) >> s.MaterialOutput())
     return mat
 
 
-with g.tree(existing_tree, collapse=False) as tree:
-    tree.tree.nodes.clear()
-    tree.tree.interface.clear()
-
+with g.tree("Geometry Nodes", clear=True) as tree:
     time = g.SceneTime()
-    curve = g.CurveCircle(resolution=100)
+    curve = g.CurveCircle.radius(resolution=20, radius=2.0)
     cat = g.CaptureAttribute.point()
-    factor = cat.capture(g.SplineParameter().o.factor)
-    sample_fac = (factor + time.o.frame / 250) >> g.Math.wrap(..., 0, 1)
+    factor = cat.items.float("Factor", g.SplineParameter().o.factor)
+    sample_fac = (factor.output + time.o.frame / 250) >> g.Math.wrap(..., 0, 1)
 
-    sample = g.SampleCurve.factor(
+    sample = g.SampleCurve.factor.float(
         curves=curve,
         factor=sample_fac,
     )
 
-    offset = g.Math.sine(sample_fac * tau * 3) * 0.2
+    offset = g.Math.sine(sample_fac * tau * 6) * 0.1
 
     points = (
         curve
@@ -118,17 +111,20 @@ with g.tree(existing_tree, collapse=False) as tree:
         >> g.SetPosition(
             position=sample.o.position, offset=g.CombineXYZ(z=offset + 0.5)
         )
-        >> g.CurveToPoints.count(count=200)
+        >> g.CurveToPoints.count(count=50)
     )
+    iop = points
 
     iop = (
         g.InstanceOnPoints(
             points,
             instance=g.Cube(),
             rotation=points.o.rotation,
-            scale=g.Vector((0.1, 0.05, 0.01)) * (g.Index() % 10) * 0.8,
+            scale=g.Vector((0.1, 0.05, 0.01)) * (g.Index() % 5) * 0.8,
         )
         >> g.RealizeInstances()
     )
+
+    iop = iop >> g.Array() >> g.SmoothByAngle()
 
     iop >> g.SetMaterial(material=material()) >> tree.outputs.geometry()
